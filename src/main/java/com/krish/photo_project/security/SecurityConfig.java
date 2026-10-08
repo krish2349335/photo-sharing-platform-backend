@@ -11,12 +11,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import static com.krish.photo_project.entity.Role.ADMIN;
 
 @Configuration
 public class SecurityConfig {
@@ -43,35 +40,63 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> {})
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/users/u" , "/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/events").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/events/*/team/*").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/galleries").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/galleries/*/photos/*").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/galleries/*/publish").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/photos/upload").hasRole("TEAM_MEMBER")
-                        .requestMatchers(HttpMethod.PUT, "/photos/*/select").hasRole("ADMIN")
-                        .requestMatchers("/galleries/public/**", "/error").permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/users/u", "/auth/login").permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/events")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/events/*/team/*")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/galleries")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/galleries/*/photos/*")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.PUT, "/galleries/*/publish")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/photos/upload")
+                        .hasRole("TEAM_MEMBER")
+
+                        .requestMatchers(HttpMethod.PUT, "/photos/*/select")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers("/galleries/public/**", "/error")
+                        .permitAll()
+
+                        .anyRequest()
+                        .authenticated()
                 )
-                        .addFilterBefore(jwtAuthenticationFilter,
-                                UsernamePasswordAuthenticationFilter.class);
-
-
+                .addFilterBefore(
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                );
 
         return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+
         CorsConfiguration configuration = new CorsConfiguration();
 
+        String frontendUrl = System.getenv()
+                .getOrDefault("FRONTEND_URL", "http://localhost:5173");
+
         configuration.setAllowedOrigins(
-                java.util.List.of("http://localhost:5173")
+                java.util.List.of(frontendUrl)
         );
 
         configuration.setAllowedMethods(
-                java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                java.util.List.of(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE",
+                        "OPTIONS"
+                )
         );
 
         configuration.setAllowedHeaders(
